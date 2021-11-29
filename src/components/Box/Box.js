@@ -1,28 +1,19 @@
-import React, { Component } from 'react'
+import React, { useState } from 'react'
 import StyledBox from './StyledBox'
 
-export default class Box extends Component {
-    state = {
-        position: {
-            x: this.props.x,
-            y: this.props.y,
-        },
-        isActive: false
-    }
+const Box = ({x, y, nbColor, handleMouseDown, handleMouseUp}) => {
+    const [position, setPosition] = useState({
+        x,
+        y
+    })
 
-    handleClick = () => {
-        this.setState(() => ({
-            isActive: true
-        }))
-        console.log(this.state.position)
-    }
-
-    render() {
-        return (
-            <StyledBox
-                onClick={() => this.handleClick()}
-                isActive={this.state.isActive}
-            />
-        )
-    }
+    return (
+        <StyledBox
+            nbColor={nbColor}
+            onMouseDown={(e) => handleMouseDown(e, nbColor, position)}
+            onMouseUp={(e) => handleMouseUp(e, nbColor, position)}
+        />
+    )
 }
+
+export default Box;

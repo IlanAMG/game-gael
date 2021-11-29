@@ -1,6 +1,7 @@
 import React from 'react'
 import StyledApp from './StyledApp'
 import Game from '../Game/Game'
+import Home from '../Home'
 
 
 class App extends React.Component {
@@ -10,10 +11,6 @@ class App extends React.Component {
 
     handleStart() {
         this.setState({ isStart: true })
-
-        // this.setState(() => ({
-        //     isStart = true
-        // }))
     }
 
     render() {
@@ -23,17 +20,9 @@ class App extends React.Component {
                     this.state.isStart ? 
                         <Game />
                     :
-                        <>
-                            <h1>
-                                GAME GAEL
-                            </h1>
-
-                            <button
-                                onClick={() => this.handleStart()}
-                            >
-                                START
-                            </button>
-                        </>
+                        <Home
+                            handleStart={() => this.handleStart()}
+                        />
                 }
             </StyledApp>
         )

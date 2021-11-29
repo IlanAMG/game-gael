@@ -1,9 +1,10 @@
 import styled, { css } from 'styled-components'
+import { theme } from '../../theme'
 
 const StyledBox = styled.div`
     width: 100px;
     height: 100px;
-    background: ${(props) => props.isActive ? '#ff0000' : '#FFF'};
+    background: ${({ nbColor }) => theme[nbColor]};
     cursor: pointer;
 `
 
