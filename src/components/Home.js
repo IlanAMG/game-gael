@@ -9,9 +9,15 @@ class Home extends Component {
                 </h1>
 
                 <button
-                    onClick={() => this.props.handleStart()}
+                    style={{marginBottom: 24}}
+                    onClick={() => this.props.onSelectPlayer({name: 'player1', id: '1' })}
                 >
-                    START
+                    PLAYER 1
+                </button>
+                <button
+                    onClick={() => this.props.onSelectPlayer({name: 'player2', id: '2' })}
+                >
+                    PLAYER 2
                 </button>
             </>
         );
