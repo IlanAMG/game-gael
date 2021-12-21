@@ -6,7 +6,8 @@ const Game = ({
     map,
     setMap,
     prevMap,
-    setPrevMap
+    setPrevMap,
+    postPattern
 }) => {
     const [pair, setPair] = useState([])
     const [followingBoxResults, setFollowingBoxResults] = useState([
@@ -110,9 +111,9 @@ const Game = ({
             return setTimeout(() => {
                 setFollowingBoxResults(copyFollowingBoxResults)
                 setPlayerCanPlay(true)
-            }, 3000)
+            }, 2000)
         }
-
+        postPattern(pattern, map)
         pattern.map(position => {
             copyMap[position['y']][position['x']] = 0
         })
@@ -120,7 +121,7 @@ const Game = ({
         setTimeout(() => {
             setMap(copyMap)
             setPlayerCanPlay(true)
-        }, 3000)
+        }, 2000)
     }
 
     const flippedBox = () => {
