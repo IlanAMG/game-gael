@@ -2,32 +2,17 @@ import React, { useState, useEffect } from 'react'
 import StyledGame from './StyledGame'
 import Box from '../Box/Box'
 
-const Game = ({level}) => {
-    const [followingBoxResult, setFollowingBoxResult] = useState([
-        [],
-        []
-    ])
-
-    const [prevMap, setPrevMap] = useState([
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0]
-    ])
-
-    const [map, setMap] = useState([
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0]
-    ])
+const Game = ({
+    map,
+    setMap,
+    prevMap,
+    setPrevMap
+}) => {
     const [pair, setPair] = useState([])
+    const [followingBoxResults, setFollowingBoxResults] = useState([
+        [],
+        [],
+    ])
     const [playerCanPlay, setPlayerCanPlay] = useState(true)
 
     const checkValidBox = (posUp) => {
@@ -78,25 +63,6 @@ const Game = ({level}) => {
         return !filterArr.includes(JSON.stringify(pos))
     }
 
-    const deleteFollowingBox = (list, i) => {
-        const copyFollowingBoxResult = [...followingBoxResult]
-        const copyMap = [...map]
-        if (list.length < 3) {
-            copyFollowingBoxResult[i] = []
-            return setTimeout(() => {
-                setFollowingBoxResult(copyFollowingBoxResult)
-                setPlayerCanPlay(true)
-            }, 1000)
-        }
-        list.map(position => {
-            copyMap[position['y']][position['x']] = 0
-        })
-        setTimeout(() => {
-            setMap(copyMap)
-            setPlayerCanPlay(true)
-        }, 1000)
-    }
-
     const checkFollowingBox = (pos, nbColor, nbLastAdd) => {
         const followingBox =  [...pos]
         const posAround = []
@@ -111,6 +77,10 @@ const Game = ({level}) => {
 
         const newPosToCheck = posAround.map((potentialBox) => {
             const boxIsValid = checkPosIncludes(potentialBox, followingBox)
+<<<<<<< HEAD
+=======
+
+>>>>>>> 9ff86d199109f7b6cf5dccd47baa2addcabd15ac
             const colorPotentialBox = 
                 potentialBox['y'] >= 0 && potentialBox['y'] <= 6 && 
                 potentialBox['y'] >= 0 && potentialBox['y'] <= 6 ? 
@@ -127,12 +97,33 @@ const Game = ({level}) => {
             }
         }).filter(x => x)
 
-
         if (newPosToCheck.length > 0) {
             return checkFollowingBox(followingBox, nbColor, newPosToCheck.length)
         } else {
             return followingBox
         }
+    }
+
+    const deleteFollowingBox = (pattern, i) => {
+        const copyFollowingBoxResults = [...followingBoxResults]
+        const copyMap = [...map]
+        //traitement
+        if (pattern.length < 3) {
+            copyFollowingBoxResults[i] = []
+            return setTimeout(() => {
+                setFollowingBoxResults(copyFollowingBoxResults)
+                setPlayerCanPlay(true)
+            }, 3000)
+        }
+
+        pattern.map(position => {
+            copyMap[position['y']][position['x']] = 0
+        })
+
+        setTimeout(() => {
+            setMap(copyMap)
+            setPlayerCanPlay(true)
+        }, 3000)
     }
 
     const flippedBox = () => {
@@ -147,7 +138,7 @@ const Game = ({level}) => {
 
         setMap(copyMap)
         
-        setFollowingBoxResult([
+        setFollowingBoxResults([
             checkFollowingBox([copyPair[1]], posDown, 1),
             checkFollowingBox([copyPair[0]], posUp, 1)
         ])
@@ -170,15 +161,12 @@ const Game = ({level}) => {
     }
 
     useEffect(() => {
-        setMap(level)
-    }, [])
-
-    useEffect(() => {
         if (pair.length === 2) {
             setPlayerCanPlay(false)
             flippedBox()
         }
-    }, [pair])
+    }, [pair])`
+    `
     useEffect(() => {
         if (followingBoxResult[0].length > 0) {
             deleteFollowingBox(followingBoxResult[0], 0)
@@ -187,6 +175,14 @@ const Game = ({level}) => {
             deleteFollowingBox(followingBoxResult[1], 1)
         }
     }, [followingBoxResult])
+
+    useEffect(() => {
+        if (followingBoxResults[0].length > 0) 
+            deleteFollowingBox(followingBoxResults[0], 0)
+        
+        if (followingBoxResults[1].length > 0) 
+            deleteFollowingBox(followingBoxResults[1], 1)
+    }, [followingBoxResults])
 
     return (
         <StyledGame>
