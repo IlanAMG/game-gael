@@ -195,6 +195,7 @@ export const removePattern = async (selectedPattern, setSelectedPattern) => {
         isUsed: true,
       });
   } catch (err) {
+    console.log(err.message);
     alert("Une erreur est survenue");
   }
 };
@@ -207,4 +208,87 @@ export const returnOnlyPattern = (pattern) => {
     }
   });
   return copyPattern;
+};
+
+// const checkFollowingBox = (pos, nbColor, nbLastAdd) => {
+//   const followingBox =  [...pos]
+//   const posAround = []
+//   for (let i = 1; i <=  nbLastAdd; i++) {
+//       posAround.push(
+//           {x: followingBox[followingBox.length - i].x - 1, y: followingBox[followingBox.length - i].y},
+//           {x: followingBox[followingBox.length - i].x + 1, y: followingBox[followingBox.length - i].y},
+//           {x: followingBox[followingBox.length - i].x, y: followingBox[followingBox.length - i].y - 1},
+//           {x: followingBox[followingBox.length - i].x, y: followingBox[followingBox.length - i].y + 1}
+//       )
+//   }
+
+//   const newPosToCheck = posAround.map((potentialBox) => {
+//       const boxIsValid = checkPosIncludes(potentialBox, followingBox)
+
+//       const colorPotentialBox =
+//           potentialBox['y'] >= 0 && potentialBox['y'] <= 6 &&
+//           potentialBox['y'] >= 0 && potentialBox['y'] <= 6 ?
+//               map[potentialBox['y']][potentialBox['x']]
+//           :
+//               null
+
+//       if (colorPotentialBox === nbColor && boxIsValid) {
+//           followingBox.push(potentialBox)
+//           return {
+//               nbColor: colorPotentialBox,
+//               pos: potentialBox
+//           }
+//       }
+//   }).filter(x => x)
+
+//   if (newPosToCheck.length > 0) {
+//       return checkFollowingBox(followingBox, nbColor, newPosToCheck.length)
+//   } else {
+//       return followingBox
+//   }
+// }
+
+export const checkWinLevel = (map, entry, exit) => {};
+
+export const resetAllPatterns = async (patterns, setMap) => {
+  try {
+    await Promise.all(
+      patterns
+        .filter((pattern) => pattern.uid)
+        .map(async (pattern) => {
+          await db
+            .collection("players")
+            .doc("2")
+            .collection("forms")
+            .doc(pattern.uid)
+            .update({
+              isUsed: false,
+            });
+        })
+    );
+    setMap([
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, "B", 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [0, "A", 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0, 0, 0],
+    ]);
+  } catch (err) {
+    console.log(err.message);
+    alert("Une erreur est survenue");
+  }
+};
+
+export const checkAllFormsUsed = (patterns) => {
+  const nbFormsUsed = patterns.filter(
+    (pattern) => pattern.isUsed && pattern.uid
+  ).length;
+
+  return (
+    nbFormsUsed === patterns.filter((pattern) => pattern.uid).length &&
+    nbFormsUsed !== 0
+  );
 };

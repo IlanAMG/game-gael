@@ -6,7 +6,8 @@ import Home from "../Home";
 import { db, postNewForm, postPlayer } from "../../firebase/Database";
 import { levels } from "../../levels/levels";
 import { ZonePattern } from "../ZonePattern/ZonePattern";
-import { getForm, getMax, getMin } from "../../utils/utils";
+import { getForm, getMax, getMin, checkAllFormsUsed } from "../../utils/utils";
+import { Waiting } from "../Waiting/Waiting";
 
 const App = () => {
   const [prevMap, setPrevMap] = useState([
@@ -29,12 +30,26 @@ const App = () => {
     [0, 0, 0, 0, 0, 0, 0],
   ]);
 
+  const [patterns, setPatterns] = useState([
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+    {},
+  ]);
+
   const [playersRdy, setPlayersRdy] = useState(false);
   const [level, setLevel] = useState(null);
   const [player, setPlayer] = useState(null);
   const [player1, setPlayer1] = useState(null);
   const [player2, setPlayer2] = useState(null);
   const [selectedPattern, setSelectedPattern] = useState(null);
+  const [waiting, setWaiting] = useState(null);
 
   const onSelectPlayer = async (player) => {
     try {
@@ -51,12 +66,9 @@ const App = () => {
     }
     let noBox = false;
     map.map((row) => row.map((box) => (box !== 0 ? (noBox = true) : null)));
-    console.log(noBox);
-    if (!noBox) {
-      setTimeout(() => {
-        setLevel(level + 1);
-      }, 2000);
-    }
+    if (noBox || !player1 || !player2 || !playersRdy || !player) return;
+
+    setWaiting(2);
   };
 
   useEffect(() => {
@@ -104,6 +116,29 @@ const App = () => {
     });
   };
 
+  useEffect(() => {
+    db.collection("players")
+      .doc("2")
+      .collection("forms")
+      .onSnapshot((snap) => {
+        const formsSnapShot = snap.docs;
+        const copyPatterns = [...patterns];
+
+        formsSnapShot.map(
+          (form, i) => (copyPatterns[i] = { ...form.data(), uid: form.id })
+        );
+        setPatterns(copyPatterns);
+      });
+  }, []);
+
+  useEffect(() => {
+    const noForms = checkAllFormsUsed(patterns);
+    if (waiting && noForms && player === "1") {
+      setLevel(level + 1);
+      setWaiting(null);
+    }
+  }, [patterns]);
+
   const postPattern = (positions, map) => {
     const copyMap = [...map];
     const minX = getMin(positions, "x");
@@ -130,14 +165,16 @@ const App = () => {
       return (
         <div className="container_game2">
           <Game2
+            patterns={patterns}
+            setPatterns={setPatterns}
             selectedPattern={selectedPattern}
             setSelectedPattern={setSelectedPattern}
-            map={map}
-            prevMap={prevMap}
-            setMap={setMap}
-            setPrevMap={setPrevMap}
           />
-          <ZonePattern setSelectedPattern={setSelectedPattern} />
+          <ZonePattern
+            patterns={patterns}
+            setPatterns={setPatterns}
+            setSelectedPattern={setSelectedPattern}
+          />
         </div>
       );
     }
@@ -148,13 +185,16 @@ const App = () => {
   }, []);
 
   return (
-    <StyledApp>
-      {playersRdy ? (
-        renderGame(player)
-      ) : (
-        <Home player={player} map={map} onSelectPlayer={onSelectPlayer} />
-      )}
-    </StyledApp>
+    <>
+      <StyledApp>
+        {waiting && player1 && player2 && <Waiting player={waiting} />}
+        {playersRdy ? (
+          renderGame(player)
+        ) : (
+          <Home player={player} map={map} onSelectPlayer={onSelectPlayer} />
+        )}
+      </StyledApp>
+    </>
   );
 };
 
