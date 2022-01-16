@@ -7,24 +7,19 @@ import {
   resetAllPatterns,
   checkAllFormsUsed,
 } from "../../utils/utils";
+import { db } from "../../firebase/Database";
 
 const Game2 = ({
   selectedPattern,
   setSelectedPattern,
   patterns,
-  setPatterns,
+  level,
+  setLevel,
+  map,
+  setMap,
 }) => {
-  const [map, setMap] = useState([
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, "B", 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, "A", 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-    [0, 0, 0, 0, 0, 0, 0, 0],
-  ]);
-  const [playerCanPlay, setPlayerCanPlay] = useState(true);
+  const [isTouched, setIsTouched] = useState(false)
+
   const [entry, setEntry] = useState({
     x: 0,
     y: 0,
@@ -37,9 +32,18 @@ const Game2 = ({
   useEffect(() => {
     const noForms = checkAllFormsUsed(patterns);
     if (noForms) {
-      const win = checkWinLevel(map, entry, exit);
+      const win = checkWinLevel(
+        map,
+        {x: entry.x / 100, y: entry.y / 100},
+        {x: exit.x / 100, y: exit.y / 100},
+        [{x: entry.x / 100, y: entry.y / 100}],
+        1
+      );
       if (!win) {
         resetAllPatterns(patterns, setMap);
+      } else {
+        db.collection('players').doc('2').update({ win: true })
+        setLevel(level + 1)
       }
     }
   }, [patterns]);
@@ -66,13 +70,29 @@ const Game2 = ({
     });
   }, []);
 
+  const highlightPath = (pos) => {
+    if (isTouched) return false
+    if (pos.x === 2 && pos.y === 5) return true
+    if (pos.x === 3 && pos.y === 5) return true
+    if (pos.x === 4 && pos.y === 5) return true
+    if (pos.x === 4 && pos.y === 4) return true
+    if (pos.x === 5 && pos.y === 4) return true
+    if (pos.x === 5 && pos.y === 3) return true
+  }
+
   const renderBox = () => {
     return map.map((row, y) => {
       return row.map((box, x) => {
-        return <Box player2 nbColor={box} x={x} y={y} />;
+        return <Box delay={x} highlight={highlightPath({x, y})} player2 nbColor={box} x={x} y={y} />;
       });
     });
   };
+
+  useEffect(() => {
+    if (selectedPattern) {
+      setIsTouched(true)
+    }
+  }, [selectedPattern])
 
   return (
     <StyledGame>

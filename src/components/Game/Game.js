@@ -7,7 +7,8 @@ const Game = ({
     setMap,
     prevMap,
     setPrevMap,
-    postPattern
+    postPattern,
+    level
 }) => {
     const [pair, setPair] = useState([])
     const [followingBoxResults, setFollowingBoxResults] = useState([
@@ -15,6 +16,7 @@ const Game = ({
         [],
     ])
     const [playerCanPlay, setPlayerCanPlay] = useState(true)
+    const [isTouched, setIsTouched] = useState(false)
 
     const checkValidBox = (posUp) => {
         const posDown = pair[0]
@@ -38,6 +40,7 @@ const Game = ({
         const copyPair = [...pair]
         copyPair.push(pos)
         setPair(copyPair)
+        setIsTouched(true)
     }
 
     const handleMouseUp = (e, nbColor, pos) => {
@@ -81,7 +84,7 @@ const Game = ({
 
             const colorPotentialBox = 
                 potentialBox['y'] >= 0 && potentialBox['y'] <= 6 && 
-                potentialBox['y'] >= 0 && potentialBox['y'] <= 6 ? 
+                potentialBox['x'] >= 0 && potentialBox['x'] <= 6 ? 
                     map[potentialBox['y']][potentialBox['x']]
                 : 
                     null
@@ -102,7 +105,7 @@ const Game = ({
         }
     }
 
-    const deleteFollowingBox = (pattern, i) => {
+    const deleteFollowingBox = async (pattern, i) => {
         const copyFollowingBoxResults = [...followingBoxResults]
         const copyMap = [...map]
         //traitement
@@ -113,7 +116,8 @@ const Game = ({
                 setPlayerCanPlay(true)
             }, 2000)
         }
-        postPattern(pattern, map)
+        await postPattern(pattern, copyMap)
+
         pattern.map(position => {
             copyMap[position['y']][position['x']] = 0
         })
@@ -121,7 +125,7 @@ const Game = ({
         setTimeout(() => {
             setMap(copyMap)
             setPlayerCanPlay(true)
-        }, 2000)
+        }, 1000)
     }
 
     const flippedBox = () => {
@@ -147,6 +151,7 @@ const Game = ({
             return row.map((box, x) => {
                 return (
                     <Box
+                        animateToLeft={x === 3 && x === y && !isTouched}
                         handleMouseDown={handleMouseDown}
                         handleMouseUp={handleMouseUp}
                         nbColor={box}
@@ -166,11 +171,13 @@ const Game = ({
     }, [pair])
 
     useEffect(() => {
-        if (followingBoxResults[0].length > 0) 
-            deleteFollowingBox(followingBoxResults[0], 0)
-        
-        if (followingBoxResults[1].length > 0) 
-            deleteFollowingBox(followingBoxResults[1], 1)
+        if (followingBoxResults[0].length > 0 && followingBoxResults[1].length > 0) {
+            if (followingBoxResults[0].length > 0) 
+                deleteFollowingBox(followingBoxResults[0], 0)
+            
+            if (followingBoxResults[1].length > 0) 
+                deleteFollowingBox(followingBoxResults[1], 1)
+        }
     }, [followingBoxResults])
 
     return (

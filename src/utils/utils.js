@@ -1,5 +1,16 @@
 import { db } from "../firebase/Database";
 
+const format = {
+  0: "7",
+  1: "6",
+  2: "5",
+  3: "4",
+  4: "3",
+  5: "2",
+  6: "1",
+  7: "0",
+};
+
 export const removeWithIndex = (arr, index) => {
   return arr.filter((_, i) => i !== index);
 };
@@ -27,14 +38,14 @@ export const getForm = (copyMap, minX, maxX, minY, maxY) => {
   const newMap = copyMap.map((row, y) => {
     return row.map((box, x) => {
       if (y < minY || y > maxY || x < minX || x > maxX) {
-        return 3;
+        return "X";
       } else {
         return box;
       }
     });
   });
   const form = newMap
-    .map((row) => row.filter((el) => el !== 3))
+    .map((row) => row.filter((el) => el !== "X"))
     .filter((row) => row.length !== 0);
   const objectForm = {};
 
@@ -49,19 +60,11 @@ export const getAllPositionsBloc = (selectedPattern, action) => {
     x: selectedPattern.position.x / 100,
     y: selectedPattern.position.y / 100,
   };
-  // console.log('position du pattern', positionDuPattern)
 
   let allPositionsBloc = [];
 
   copyPattern.reverse().map((row, y) => {
     return row.map((box, x) => {
-      // const xDuCube = x
-      // const yDuCube = y
-      // const hauteur = selectedPattern.pattern.length
-      // const largeur = row.length
-
-      // console.log(hauteur)
-      // console.log(largeur)
       return allPositionsBloc.push({
         x: positionDuPattern.x + x,
         y: positionDuPattern.y + y,
@@ -164,16 +167,6 @@ export const checkIfCanPose = (pattern, entry, exit) => {
 
 export const fixePattern = (actualPositionBloc, map, setMap) => {
   const copyMap = [...map];
-  const format = {
-    0: "7",
-    1: "6",
-    2: "5",
-    3: "4",
-    4: "3",
-    5: "2",
-    6: "1",
-    7: "0",
-  };
   actualPositionBloc.map((bloc) => {
     if (bloc.nbColor !== 0) {
       copyMap[format[bloc.y]][bloc.x] = bloc.nbColor;
@@ -210,45 +203,53 @@ export const returnOnlyPattern = (pattern) => {
   return copyPattern;
 };
 
-// const checkFollowingBox = (pos, nbColor, nbLastAdd) => {
-//   const followingBox =  [...pos]
-//   const posAround = []
-//   for (let i = 1; i <=  nbLastAdd; i++) {
-//       posAround.push(
-//           {x: followingBox[followingBox.length - i].x - 1, y: followingBox[followingBox.length - i].y},
-//           {x: followingBox[followingBox.length - i].x + 1, y: followingBox[followingBox.length - i].y},
-//           {x: followingBox[followingBox.length - i].x, y: followingBox[followingBox.length - i].y - 1},
-//           {x: followingBox[followingBox.length - i].x, y: followingBox[followingBox.length - i].y + 1}
-//       )
-//   }
+export const checkWinLevel = (prevMap, entry, exit, followingBox, nbLastAdd) => {
+  let newFollowingBox = [...followingBox]
+  let itsWin = false;
+  const map = [...prevMap]
+  const checkPosIncludes = (pos, arr) => {
+    const filterArr = arr.map(el => JSON.stringify(el))
+    return !filterArr.includes(JSON.stringify(pos))
+  }
+  const posAround = []
+  for (let i = 1; i <=  nbLastAdd; i++) {
+      posAround.push(
+        {x: followingBox[followingBox.length - i].x - 1, y: followingBox[followingBox.length - i].y},
+        {x: followingBox[followingBox.length - i].x + 1, y: followingBox[followingBox.length - i].y},
+        {x: followingBox[followingBox.length - i].x, y: followingBox[followingBox.length - i].y - 1},
+        {x: followingBox[followingBox.length - i].x, y: followingBox[followingBox.length - i].y + 1}
+      )
+  }
 
-//   const newPosToCheck = posAround.map((potentialBox) => {
-//       const boxIsValid = checkPosIncludes(potentialBox, followingBox)
+    const newPosToCheck = posAround.map((potentialBox) => {
+      const boxIsValid = checkPosIncludes(potentialBox, newFollowingBox)
+      const colorPotentialBox =
+          potentialBox['y'] >= 0 && potentialBox['y'] <= 7 &&
+          potentialBox['x'] >= 0 && potentialBox['x'] <= 7 ?
+              map[format[potentialBox['y']]][potentialBox['x']]
+          :
+              null
 
-//       const colorPotentialBox =
-//           potentialBox['y'] >= 0 && potentialBox['y'] <= 6 &&
-//           potentialBox['y'] >= 0 && potentialBox['y'] <= 6 ?
-//               map[potentialBox['y']][potentialBox['x']]
-//           :
-//               null
+      if (typeof colorPotentialBox === 'number' && boxIsValid && colorPotentialBox !== 0) {
+        newFollowingBox.push(potentialBox)
+          return {
+              ...potentialBox
+          }
+      }
+      if (typeof colorPotentialBox === 'string' && potentialBox.x === exit.x && potentialBox.y === exit.y) {
+        itsWin = true
+      }
+  }).filter(x => x)
 
-//       if (colorPotentialBox === nbColor && boxIsValid) {
-//           followingBox.push(potentialBox)
-//           return {
-//               nbColor: colorPotentialBox,
-//               pos: potentialBox
-//           }
-//       }
-//   }).filter(x => x)
-
-//   if (newPosToCheck.length > 0) {
-//       return checkFollowingBox(followingBox, nbColor, newPosToCheck.length)
-//   } else {
-//       return followingBox
-//   }
-// }
-
-export const checkWinLevel = (map, entry, exit) => {};
+    if (itsWin) {
+      return true
+    }
+    if (newPosToCheck.length > 0) {
+      return checkWinLevel(map, entry, exit, newFollowingBox, newPosToCheck.length)
+    } else {
+        return false
+    }
+};
 
 export const resetAllPatterns = async (patterns, setMap) => {
   try {

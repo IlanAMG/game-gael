@@ -4,7 +4,7 @@ import Game from "../Game/Game";
 import Game2 from "../Game2/Game";
 import Home from "../Home";
 import { db, postNewForm, postPlayer } from "../../firebase/Database";
-import { levels } from "../../levels/levels";
+import { levels, levelsJ2 } from "../../levels/levels";
 import { ZonePattern } from "../ZonePattern/ZonePattern";
 import { getForm, getMax, getMin, checkAllFormsUsed } from "../../utils/utils";
 import { Waiting } from "../Waiting/Waiting";
@@ -29,6 +29,16 @@ const App = () => {
     [0, 0, 0, 0, 0, 0, 0],
     [0, 0, 0, 0, 0, 0, 0],
   ]);
+  const [map2, setMap2] = useState([
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, "B", 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, "A", 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0],
+  ]);
 
   const [patterns, setPatterns] = useState([
     {},
@@ -44,12 +54,13 @@ const App = () => {
   ]);
 
   const [playersRdy, setPlayersRdy] = useState(false);
-  const [level, setLevel] = useState(null);
+  const [level, setLevel] = useState(1);
   const [player, setPlayer] = useState(null);
   const [player1, setPlayer1] = useState(null);
   const [player2, setPlayer2] = useState(null);
   const [selectedPattern, setSelectedPattern] = useState(null);
   const [waiting, setWaiting] = useState(null);
+  const [winJ2, setJ2Win] = useState(false);
 
   const onSelectPlayer = async (player) => {
     try {
@@ -78,9 +89,11 @@ const App = () => {
     if (level === 4) {
       setLevel(1);
       setMap(levels[1]);
+      setMap2(levelsJ2[1]);
       return setPrevMap(levels[1]);
     }
     setMap(levels[level]);
+    setMap2(levelsJ2[level]);
     setPrevMap(levels[level]);
   }, [level]);
 
@@ -118,6 +131,17 @@ const App = () => {
 
   useEffect(() => {
     db.collection("players")
+    .doc("2")
+    .onSnapshot((doc) => {
+      if (!doc.exists) return;
+      if (doc.data().win) {
+        setJ2Win(true)
+      }
+    });
+  }, [])
+
+  useEffect(() => {
+    db.collection("players")
       .doc("2")
       .collection("forms")
       .onSnapshot((snap) => {
@@ -132,27 +156,31 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    const noForms = checkAllFormsUsed(patterns);
-    if (waiting && noForms && player === "1") {
+    if (waiting && player === "1" && winJ2) {
+      db.collection('players').doc('2').update({ win: false })
       setLevel(level + 1);
       setWaiting(null);
+      setJ2Win(false)
     }
-  }, [patterns]);
+  }, [winJ2]);
 
-  const postPattern = (positions, map) => {
+  const postPattern = async (positions, map) => {
     const copyMap = [...map];
     const minX = getMin(positions, "x");
     const maxX = getMax(positions, "x");
     const minY = getMin(positions, "y");
     const maxY = getMax(positions, "y");
+
     const form = getForm(copyMap, minX, maxX, minY, maxY);
-    postNewForm(form);
+    await postNewForm(form);
+    return true
   };
 
   const renderGame = (player) => {
     if (player === "1") {
       return (
         <Game
+        level={level}
           postPattern={postPattern}
           map={map}
           prevMap={prevMap}
@@ -166,9 +194,12 @@ const App = () => {
         <div className="container_game2">
           <Game2
             patterns={patterns}
-            setPatterns={setPatterns}
             selectedPattern={selectedPattern}
             setSelectedPattern={setSelectedPattern}
+            setLevel={setLevel}
+            level={level}
+            map={map2}
+            setMap={setMap2}
           />
           <ZonePattern
             patterns={patterns}
