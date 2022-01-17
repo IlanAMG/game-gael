@@ -5,7 +5,7 @@ const StyledBox = styled.div`
   width: 100px;
   height: 100px;
   background-image: ${({ nbColor }) => (nbColor ? `url(/static/${theme[nbColor]}fixe.gif)` : "")};
-  background-color: ${({ nbColor }) => (nbColor === "A" || nbColor === "B" ? theme[nbColor] : "")};
+  background-color: ${({ nbColor, player2 }) => (nbColor === "A" || nbColor === "B" || nbColor === 0 ? (player2 && nbColor === 0) ? "#FFF" : theme[nbColor] : "")};
   cursor: pointer;
   z-index: ${({ nbColor }) => (nbColor === "A" || nbColor === "B" ? 1 : 0)};
   border-radius: ${({ nbColor }) => (nbColor === "A" || nbColor === "B" ? "12px" : 0)};
@@ -13,13 +13,20 @@ const StyledBox = styled.div`
   background-repeat: no-repeat;
   background-size: cover;
 
+  ${({player2}) => player2 && css`
+    &.player2 {
+      background-image: none !important;
+      background-color: ${({ nbColor }) => (nbColor !== "A" && nbColor !== "B" && nbColor !== 0 ? "#797979" :  nbColor === 0 ? "transparent" : "")} !important;
+    }
+  `}
+
   ${({down}) => down && css`
     background-image: ${({ nbColor }) => (nbColor ? `url(/static/${theme[nbColor]}up.gif)` : "")};
   `}
 
   ${({fixUp}) => fixUp && css`
-    background-image: none;
-    background-color: blue;
+  background-image: ${({ nbColor }) => (nbColor ? `url(/static/${theme[nbColor]}fixe.gif)` : "")} !important;
+
   `}
   ${({fixDown}) => fixDown && css`
   background-image: ${({ nbColor }) => (nbColor ? `url(/static/${theme[nbColor]}fixe.gif)` : "")} !important;
@@ -41,7 +48,7 @@ const StyledBox = styled.div`
       }
     }
     position: relative;
-    background: #FFF;
+    background: #000000;
     &::after {  
       width: 100px;
       height: 100px;

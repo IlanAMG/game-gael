@@ -117,10 +117,6 @@ export const SelectedPattern = ({
     getAllPositionsBloc(selectedPattern, setActualPositionBloc);
   }, []);
 
-  useEffect(() => {
-    console.log(actualPositionBloc);
-  }, [actualPositionBloc]);
-
   const renderForm = () => {
     return selectedPattern.pattern.map((row, y) => {
       return row.map((box, x) => {

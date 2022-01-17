@@ -29,6 +29,12 @@ const Game2 = ({
     y: 0,
   });
 
+  const onWin = async () => {
+    await Promise.all(patterns.map(async (el) => el.uid ? await db.collection('players').doc('2').collection('forms').doc(el.uid).update({ lastLevel: true}) : null))
+    await db.collection('players').doc('2').update({ win: true })
+    setLevel(level + 1)
+  }
+
   useEffect(() => {
     const noForms = checkAllFormsUsed(patterns);
     if (noForms) {
@@ -42,8 +48,7 @@ const Game2 = ({
       if (!win) {
         resetAllPatterns(patterns, setMap);
       } else {
-        db.collection('players').doc('2').update({ win: true })
-        setLevel(level + 1)
+        onWin()
       }
     }
   }, [patterns]);
@@ -68,7 +73,7 @@ const Game2 = ({
         }
       });
     });
-  }, []);
+  }, [map]);
 
   const highlightPath = (pos) => {
     if (isTouched) return false

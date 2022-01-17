@@ -2,8 +2,8 @@ import styled from 'styled-components'
 
 const StyledZonePattern = styled.div`
     width: 300px;
-    height: 700px;
-    background: #ffffff99;
+    height: 800px;
+    background: #b8beca99;
     margin-left: 24px;
     display: flex;
     flex-wrap: wrap;

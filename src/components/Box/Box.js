@@ -9,9 +9,11 @@ const Box = ({ x, y, nbColor, handleMouseDown, handleMouseUp, player2, animateTo
   const [fixDown, setFixDown] = useState(false)
 
   if (player2) {
-    return <StyledBox highlight={highlight} nbColor={nbColor} delay={delay} />;
+    return <StyledBox player2={player2} className='player2' highlight={highlight} nbColor={nbColor} delay={delay} />;
   }
 
+  //Gestion des gifs ici
+  
   return (
     <StyledBox
       animateToLeft={animateToLeft}
@@ -19,7 +21,7 @@ const Box = ({ x, y, nbColor, handleMouseDown, handleMouseUp, player2, animateTo
       fixUp={fixUp}
       fixDown={fixDown}
       up={up}
-      nbColor={nbColor === 0 ? "" : nbColor}
+      nbColor={nbColor}
       onMouseDown={(e) => {
         setDown(true)
         setUp(false)

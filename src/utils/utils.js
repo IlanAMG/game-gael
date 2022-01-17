@@ -203,10 +203,10 @@ export const returnOnlyPattern = (pattern) => {
   return copyPattern;
 };
 
-export const checkWinLevel = (prevMap, entry, exit, followingBox, nbLastAdd) => {
+export const checkWinLevel = (copyMap, entry, exit, followingBox, nbLastAdd) => {
   let newFollowingBox = [...followingBox]
   let itsWin = false;
-  const map = [...prevMap]
+  const map = [...copyMap]
   const checkPosIncludes = (pos, arr) => {
     const filterArr = arr.map(el => JSON.stringify(el))
     return !filterArr.includes(JSON.stringify(pos))
@@ -257,6 +257,7 @@ export const resetAllPatterns = async (patterns, setMap) => {
       patterns
         .filter((pattern) => pattern.uid)
         .map(async (pattern) => {
+          if (pattern.lastLevel) return;
           await db
             .collection("players")
             .doc("2")
@@ -267,16 +268,8 @@ export const resetAllPatterns = async (patterns, setMap) => {
             });
         })
     );
-    setMap([
-      [0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, "B", 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0],
-      [0, "A", 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0],
-      [0, 0, 0, 0, 0, 0, 0, 0],
-    ]);
+    const initialMap = (await db.collection('players').doc('2').get())?.data().initialMap
+    setMap(Object.values(initialMap).map(value => value))
   } catch (err) {
     console.log(err.message);
     alert("Une erreur est survenue");

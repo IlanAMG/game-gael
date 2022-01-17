@@ -6,6 +6,7 @@ const StyledGame = styled.div`
     background: #FFF;
     display: flex;
     flex-wrap: wrap;
+    position: relative;
 `
 
 export default StyledGame

@@ -89,12 +89,17 @@ const App = () => {
     if (level === 4) {
       setLevel(1);
       setMap(levels[1]);
+      db.collection('players').doc('2').update({
+        initialMap: {...levelsJ2[1]}
+      })
       setMap2(levelsJ2[1]);
-      return setPrevMap(levels[1]);
+    } else {
+      setMap(levels[level]);
+      db.collection('players').doc('2').update({
+        initialMap: {...levelsJ2[level]}
+      })
+      setMap2(levelsJ2[level]);
     }
-    setMap(levels[level]);
-    setMap2(levelsJ2[level]);
-    setPrevMap(levels[level]);
   }, [level]);
 
   useEffect(() => {
@@ -147,10 +152,12 @@ const App = () => {
       .onSnapshot((snap) => {
         const formsSnapShot = snap.docs;
         const copyPatterns = [...patterns];
-
         formsSnapShot.map(
-          (form, i) => (copyPatterns[i] = { ...form.data(), uid: form.id })
-        );
+          (form, i) => {
+            const date = form.date
+            delete form["date"]
+            return (copyPatterns[i] = { ...form.data().form, uid: form.id, date, isUsed: form.data().isUsed, lastLevel: form.data().lastLevel })
+          });
         setPatterns(copyPatterns);
       });
   }, []);
@@ -164,15 +171,16 @@ const App = () => {
     }
   }, [winJ2]);
 
-  const postPattern = async (positions, map) => {
+  const postPattern = async (positions, map, date) => {
     const copyMap = [...map];
     const minX = getMin(positions, "x");
     const maxX = getMax(positions, "x");
     const minY = getMin(positions, "y");
     const maxY = getMax(positions, "y");
 
+    console.log(date)
     const form = getForm(copyMap, minX, maxX, minY, maxY);
-    await postNewForm(form);
+    await postNewForm(form, date);
     return true
   };
 
@@ -214,6 +222,18 @@ const App = () => {
   useEffect(() => {
     initializeGame();
   }, []);
+
+  useEffect(() => {
+      if (player === "1") {
+        document.body.style.backgroundColor = '#000';
+      }
+      if (player === "2") {
+        document.body.style.backgroundColor = '#FFF';
+      }
+  }, [player])
+useEffect(() => {
+    return () => document.body.style.backgroundColor = '#000';
+}, [])
 
   return (
     <>

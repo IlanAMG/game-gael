@@ -4,8 +4,8 @@ class Home extends Component {
     render() {
         return (
             <>
-                <h1>
-                    GAME GAEL
+                <h1 style={this.props.player === "2" ? { color: "#000"} : { color: "#FFF" }} id='title'>
+                    LINKA
                 </h1>
 
                 <button
